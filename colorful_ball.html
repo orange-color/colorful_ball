@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>炫彩小球</title>
+    <style type="text/css">
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        canvas{
+            display: block;
+            background: black;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<canvas width="500" height="400"></canvas>
+<script>
+    let canvas = document.querySelector('canvas');
+    let ctx = canvas.getContext('2d');
+    let ctxWidth = ctx.canvas.width;
+    let ctxHeight = ctx.canvas.height;
+    class Ball{
+        constructor(canvas,x,y){
+            this.canvas = canvas;
+            this.ctx = canvas.getContext('2d');
+            this.ctxWidth = this.ctx.canvas.width;
+            this.ctxHeight = this.ctx.canvas.height;
+            this.x = x;
+            this.y = y;
+            this.color = Ball.randomColor();
+            this.timerId = null;
+            this.r = 30;
+
+            //生成偏移位
+            this.dx = Ball.randomNumber(-5,6);  //-5~5 [取不到6]
+            this.dy = Ball.randomNumber(-5,6);  //-5~5 [取不到6]
+            this.dr = Ball.randomNumber(0.5,1); //[取不到1]
+        }
+        render(){
+            this.ctx.beginPath();
+            this.ctx.arc(this.x,this.y,this.r,0,Math.PI * 2);
+            this.ctx.fillStyle = this.color;
+            this.ctx.fill();
+        }
+        update(){
+            this.x += this.dx;
+            this.y += this.dy;
+            this.r -= this.dr;
+            if (this.r <= 0 || (this.x + this.r) <= 0 || (this.x - this.r) >= this.ctxWidth ||
+                (this.y + this.r) <= 0 || (this.y - this.r)  >= this.ctxHeight) {
+                return false
+            }
+            return true
+        }
+        static randomColor(){
+            let r = Math.floor(Ball.randomNumber(0,256));
+            let g = Math.floor(Ball.randomNumber(0,256));
+            let b = Math.floor(Ball.randomNumber(0,256));
+            return `rgb(${r},${g},${b})`
+        }
+        static randomNumber(min,max){
+            return Math.random() * (max - min) + min
+        }
+    }
+    let list = [];
+    canvas.onmousemove = function (e) {
+        let x = e.offsetX;
+        let y = e.offsetY;
+        let ball = new Ball(canvas,x,y);
+        list.push(ball);
+        ball.render();
+    };
+    setInterval(function () {
+        ctx.clearRect(0,0,ctxWidth,ctxHeight);
+        for (let i = 0; i < list.length; i++) {
+            let oBall = list[i];
+            let res = oBall.update();
+            if (res){
+                oBall.render();
+            }else{
+                list.splice(i,1)
+            }
+        }
+    },50)
+</script>
+
+</body>
+</html>

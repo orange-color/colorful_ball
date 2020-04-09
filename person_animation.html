@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>帧动画</title>
+    <style type="text/css">
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        canvas{
+            display: block;
+            margin: 100px auto;
+            background: pink;
+        }
+    </style>
+</head>
+<body>
+    <canvas width="500" height="400"></canvas>
+    <script>
+        let canvas = document.querySelector('canvas');
+        class Person{
+            constructor(canvas,x,y){
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.ctxWidth = this.ctx.canvas.width;
+                this.ctxHeight = this.ctx.canvas.height;
+                this.x = x;
+                this.y = y;
+                this.timerId = null;
+                this.count = 0;
+                this.personDirection = 3;
+            }
+            render(url,index){
+                this.ctx.clearRect(0,0,this.ctxWidth,this.ctxHeight);
+                let oImg = new Image();
+                oImg.onload = () => {
+                    let oImgX = oImg.width;
+                    let oImgY = oImg.height;
+                    this.oImg = oImg;
+                    this.personIndex = index;
+                    this.personWidth = oImgX / (this.personIndex + 1);
+                    this.personHeight = oImgY / (this.personIndex + 1);
+                    this.ctx.drawImage(oImg,0,0,this.personWidth,this.personHeight,this.x,this.y,this.personWidth,this.personHeight);
+                };
+                oImg.src = url;
+            }
+            run(speed,stepX,stepY){
+                //人物每次run前清空定时器，防止叠加
+                this.stop();
+                //设置人物方向
+                let startY = this.personHeight * this.personDirection;
+                this.timerId = setInterval( () => {
+                    //超过视图范围停止
+                    switch (this.personDirection) {
+                        case 3:
+                            if (this.y < 0){
+                                this.stop();
+                                return false;
+                            }
+                            break;
+                        case 1:
+                            if (this.x < 0){
+                                this.stop();
+                                return false;
+                            }
+                            break;
+                        case 0:
+                            if (this.y > (this.ctxHeight - this.personHeight)) {
+                                this.stop();
+                                return false;
+                            }
+                            break;
+                        case 2:
+                            if (this.x > (this.ctxWidth - this.personWidth)) {
+                                this.stop();
+                                return false;
+                            }
+                            break;
+                    }
+                    //动画前清空画布
+                    this.ctx.clearRect(0,0,this.ctxWidth,this.ctxHeight);
+                    //设置步长及人物坐标
+                    this.x += stepX;
+                    this.y += stepY;
+                    //循环动画
+                    this.count ++;
+                    if (this.count > this.personIndex) {
+                        this.count = 0;
+                    }
+                    let startX = this.personWidth * this.count;
+                    this.ctx.drawImage(this.oImg,startX,startY,this.personWidth,this.personHeight,this.x,this.y,this.personWidth,this.personHeight);
+                },speed)
+            }
+            stop(){
+                clearInterval(this.timerId);
+            }
+            moveUp(speed = 100){
+                this.personDirection = 3;
+                this.run(speed,0,-5);
+            }
+            moveLeft(speed = 100){
+                this.personDirection = 1;
+                this.run(speed,-5,0);
+            }
+            moveDown(speed = 100){
+                this.personDirection = 0;
+                this.run(speed,0,5);
+            }
+            moveRight(speed = 100){
+                this.personDirection = 2;
+                this.run(speed,5,0);
+            }
+        }
+        let girl = new Person(canvas,200,150);
+        girl.render("image/person.png",3);
+        window.onkeydown = function (e) {
+            let key = e.key;
+            switch (key.toLowerCase()) {
+                case "arrowup":
+                    girl.moveUp();
+                    break;
+                case "arrowleft":
+                    girl.moveLeft();
+                    break;
+                case "arrowdown":
+                    girl.moveDown();
+                    break;
+                case "arrowright":
+                    girl.moveRight();
+                    break;
+                case "w":
+                    girl.moveUp();
+                    break;
+                case "a":
+                    girl.moveLeft();
+                    break;
+                case "s":
+                    girl.moveDown();
+                    break;
+                case "d":
+                    girl.moveRight();
+                    break;
+                case " ":
+                    girl.stop();
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
